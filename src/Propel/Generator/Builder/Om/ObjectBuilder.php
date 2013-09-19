@@ -163,7 +163,7 @@ class ObjectBuilder extends AbstractObjectBuilder
             $fmt = $this->getTemporalFormatter($column);
             try {
                 if (!($this->getPlatform() instanceof MysqlPlatform &&
-                ($val === '0000-00-00 00:00:00' || $val === '0000-00-00'))) {
+                    ($val === '0000-00-00 00:00:00' || $val === '0000-00-00'))) {
                     // while technically this is not a default value of NULL,
                     // this seems to be closest in meaning.
                     $defDt = new \DateTime($val);
@@ -416,8 +416,8 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
 
         // many-to-many relationships
         foreach ($table->getCrossFks() as $fkList) {
-                $crossFK = $fkList[1];
-                $this->addCrossFKAttributes($script, $crossFK);
+            $crossFK = $fkList[1];
+            $this->addCrossFKAttributes($script, $crossFK);
         }
 
         $this->addAlreadyInSaveAttribute($script);
@@ -3135,7 +3135,7 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
 
         ksort($localColumns); // restoring the order of the foreign PK
         $localColumns = count($localColumns) > 1 ?
-                ('array('.implode(', ', $localColumns).')') : reset($localColumns);
+            ('array('.implode(', ', $localColumns).')') : reset($localColumns);
 
         $script .= "
 
@@ -3273,7 +3273,7 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
             $relCol2 = $this->getFKPhpNameAffix($fk2, false);
 
             if ( $this->getRelatedBySuffix($refFK) != "" &&
-            ($this->getRelatedBySuffix($refFK) == $this->getRelatedBySuffix($fk2))) {
+                ($this->getRelatedBySuffix($refFK) == $this->getRelatedBySuffix($fk2))) {
                 $doJoinGet = false;
             }
 
@@ -3867,41 +3867,41 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
         $isFirstPk = ($middelFks[0]->getForeignTableCommonName() == $this->getTable()->getCommonName());
 
         $script .= "
-            if (\$this->{$lowerRelatedName}ScheduledForDeletion !== null) {
-                if (!\$this->{$lowerRelatedName}ScheduledForDeletion->isEmpty()) {
-                    \$pks = array();
-                    \$pk  = \$this->getPrimaryKey();
-                    foreach (\$this->{$lowerRelatedName}ScheduledForDeletion->getPrimaryKeys(false) as \$remotePk) {";
+                if (\$this->{$lowerRelatedName}ScheduledForDeletion !== null) {
+                    if (!\$this->{$lowerRelatedName}ScheduledForDeletion->isEmpty()) {
+                        \$pks = array();
+                        \$pk  = \$this->getPrimaryKey();
+                        foreach (\$this->{$lowerRelatedName}ScheduledForDeletion->getPrimaryKeys(false) as \$remotePk) {";
 
         if ($isFirstPk) {
             $script .= "
-                        \$pks[] = array(\$pk, \$remotePk);";
+                            \$pks[] = array(\$pk, \$remotePk);";
         } else {
             $script .= "
-                        \$pks[] = array(\$remotePk, \$pk);";
+                            \$pks[] = array(\$remotePk, \$pk);";
         }
 
         $script .= "
+                        }
+
+                        $queryClassName::create()
+                            ->filterByPrimaryKeys(\$pks)
+                            ->delete(\$con);
+                        \$this->{$lowerRelatedName}ScheduledForDeletion = null;
                     }
 
-                    $queryClassName::create()
-                        ->filterByPrimaryKeys(\$pks)
-                        ->delete(\$con);
-                    \$this->{$lowerRelatedName}ScheduledForDeletion = null;
-                }
-
-                foreach (\$this->get{$relatedName}() as \${$lowerSingleRelatedName}) {
-                    if (\${$lowerSingleRelatedName}->isModified()) {
-                        \${$lowerSingleRelatedName}->save(\$con);
+                    foreach (\$this->get{$relatedName}() as \${$lowerSingleRelatedName}) {
+                        if (\${$lowerSingleRelatedName}->isModified()) {
+                            \${$lowerSingleRelatedName}->save(\$con);
+                        }
+                    }
+                } elseif (\$this->coll{$relatedName}) {
+                    foreach (\$this->coll{$relatedName} as \${$lowerSingleRelatedName}) {
+                        if (\${$lowerSingleRelatedName}->isModified()) {
+                            \${$lowerSingleRelatedName}->save(\$con);
+                        }
                     }
                 }
-            } elseif (\$this->coll{$relatedName}) {
-                foreach (\$this->coll{$relatedName} as \${$lowerSingleRelatedName}) {
-                    if (\${$lowerSingleRelatedName}->isModified()) {
-                        \${$lowerSingleRelatedName}->save(\$con);
-                    }
-                }
-            }
 ";
     }
 
@@ -3913,26 +3913,26 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
         $queryClassName         = $this->getNewStubQueryBuilder($refFK->getTable())->getClassname();
 
         $script .= "
-            if (\$this->{$lowerRelatedName}ScheduledForDeletion !== null) {
-                if (!\$this->{$lowerRelatedName}ScheduledForDeletion->isEmpty()) {";
+                if (\$this->{$lowerRelatedName}ScheduledForDeletion !== null) {
+                    if (!\$this->{$lowerRelatedName}ScheduledForDeletion->isEmpty()) {";
 
-            if ($refFK->isLocalColumnsRequired() || ForeignKey::CASCADE === $refFK->getOnDelete()) {
-                $script .= "
-                    $queryClassName::create()
-                        ->filterByPrimaryKeys(\$this->{$lowerRelatedName}ScheduledForDeletion->getPrimaryKeys(false))
-                        ->delete(\$con);";
-            } else {
-                $script .= "
-                    foreach (\$this->{$lowerRelatedName}ScheduledForDeletion as \${$lowerSingleRelatedName}) {
-                        // need to save related object because we set the relation to null
-                        \${$lowerSingleRelatedName}->save(\$con);
-                    }";
-            }
-
+        if ($refFK->isLocalColumnsRequired() || ForeignKey::CASCADE === $refFK->getOnDelete()) {
             $script .= "
-                    \$this->{$lowerRelatedName}ScheduledForDeletion = null;
+                        $queryClassName::create()
+                            ->filterByPrimaryKeys(\$this->{$lowerRelatedName}ScheduledForDeletion->getPrimaryKeys(false))
+                            ->delete(\$con);";
+        } else {
+            $script .= "
+                        foreach (\$this->{$lowerRelatedName}ScheduledForDeletion as \${$lowerSingleRelatedName}) {
+                            // need to save related object because we set the relation to null
+                            \${$lowerSingleRelatedName}->save(\$con);
+                        }";
+        }
+
+        $script .= "
+                        \$this->{$lowerRelatedName}ScheduledForDeletion = null;
+                    }
                 }
-            }
 ";
     }
 
@@ -4215,14 +4215,14 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
      */
     protected function addCrossFKDoAdd(&$script, ForeignKey $refFK, ForeignKey $crossFK)
     {
-         $relatedObjectClassName      = $this->getFKPhpNameAffix($crossFK, $plural = false);
-         $selfRelationNamePlural      = $this->getFKPhpNameAffix($refFK, $plural = true);
-         $lowerRelatedObjectClassName = lcfirst($relatedObjectClassName);
-         $joinedTableObjectBuilder    = $this->getNewObjectBuilder($refFK->getTable());
-         $className                   = $joinedTableObjectBuilder->getObjectClassname();
-         $refKObjectClassName         = $this->getRefFKPhpNameAffix($refFK, $plural = false);
-         $tblFK                       = $refFK->getTable();
-         $foreignObjectName           = '$' . $tblFK->getStudlyPhpName();
+        $relatedObjectClassName      = $this->getFKPhpNameAffix($crossFK, $plural = false);
+        $selfRelationNamePlural      = $this->getFKPhpNameAffix($refFK, $plural = true);
+        $lowerRelatedObjectClassName = lcfirst($relatedObjectClassName);
+        $joinedTableObjectBuilder    = $this->getNewObjectBuilder($refFK->getTable());
+        $className                   = $joinedTableObjectBuilder->getObjectClassname();
+        $refKObjectClassName         = $this->getRefFKPhpNameAffix($refFK, $plural = false);
+        $tblFK                       = $refFK->getTable();
+        $foreignObjectName           = '$' . $tblFK->getStudlyPhpName();
 
         $script .= "
     /**
@@ -4319,75 +4319,77 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
         \$affectedRows = 0; // initialize var to track total num of affected rows
         if (!\$this->alreadyInSave) {
             \$this->alreadyInSave = true;
+
+            try {
 ";
         if ($reloadOnInsert || $reloadOnUpdate) {
             $script .= "
-            \$reloadObject = false;
+                \$reloadObject = false;
 ";
         }
 
         if (count($table->getForeignKeys())) {
 
             $script .= "
-            // We call the save method on the following object(s) if they
-            // were passed to this object by their corresponding set
-            // method.  This object relates to these object(s) by a
-            // foreign key reference.
+                // We call the save method on the following object(s) if they
+                // were passed to this object by their corresponding set
+                // method.  This object relates to these object(s) by a
+                // foreign key reference.
 ";
 
             foreach ($table->getForeignKeys() as $fk) {
                 $aVarName = $this->getFKVarName($fk);
                 $script .= "
-            if (\$this->$aVarName !== null) {
-                if (\$this->" . $aVarName . "->isModified() || \$this->" . $aVarName . "->isNew()) {
-                    \$affectedRows += \$this->" . $aVarName . "->save(\$con);
+                if (\$this->$aVarName !== null) {
+                    if (\$this->" . $aVarName . "->isModified() || \$this->" . $aVarName . "->isNew()) {
+                        \$affectedRows += \$this->" . $aVarName . "->save(\$con);
+                    }
+                    \$this->set".$this->getFKPhpNameAffix($fk, false)."(\$this->$aVarName);
                 }
-                \$this->set".$this->getFKPhpNameAffix($fk, false)."(\$this->$aVarName);
-            }
 ";
             } // foreach foreign k
         } // if (count(foreign keys))
 
         $script .= "
-            if (\$this->isNew() || \$this->isModified()) {
-                // persist changes
-                if (\$this->isNew()) {
-                    \$this->doInsert(\$con);";
+                if (\$this->isNew() || \$this->isModified()) {
+                    // persist changes
+                    if (\$this->isNew()) {
+                        \$this->doInsert(\$con);";
         if ($reloadOnInsert) {
             $script .= "
-                    if (!\$skipReload) {
-                        \$reloadObject = true;
-                    }";
+                        if (!\$skipReload) {
+                            \$reloadObject = true;
+                        }";
         }
         $script .= "
-                } else {
-                    \$this->doUpdate(\$con);";
+                    } else {
+                        \$this->doUpdate(\$con);";
         if ($reloadOnUpdate) {
             $script .= "
-                    if (!\$skipReload) {
-                        \$reloadObject = true;
-                    }";
+                        if (!\$skipReload) {
+                            \$reloadObject = true;
+                        }";
         }
         $script .= "
-                }
-                \$affectedRows += 1;";
+                    }
+                    \$affectedRows += 1;";
 
         // We need to rewind any LOB columns
         foreach ($table->getColumns() as $col) {
             $clo = strtolower($col->getName());
             if ($col->isLobType()) {
                 $script .= "
-                // Rewind the $clo LOB column, since PDO does not rewind after inserting value.
-                if (\$this->$clo !== null && is_resource(\$this->$clo)) {
-                    rewind(\$this->$clo);
-                }
+                    // Rewind the $clo LOB column, since PDO does not rewind after inserting value.
+                    if (\$this->$clo !== null && is_resource(\$this->$clo)) {
+                        rewind(\$this->$clo);
+                    }
 ";
             }
         }
 
         $script .= "
-                \$this->resetModified();
-            }
+                    \$this->resetModified();
+                }
 ";
 
         if ($table->hasCrossForeignKeys()) {
@@ -4401,11 +4403,11 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
             if ($refFK->isLocalPrimaryKey()) {
                 $varName = $this->getPKRefFKVarName($refFK);
                 $script .= "
-            if (\$this->$varName !== null) {
-                if (!\$this->{$varName}->isDeleted() && (\$this->{$varName}->isNew() || \$this->{$varName}->isModified())) {
-                    \$affectedRows += \$this->{$varName}->save(\$con);
+                if (\$this->$varName !== null) {
+                    if (!\$this->{$varName}->isDeleted() && (\$this->{$varName}->isNew() || \$this->{$varName}->isModified())) {
+                        \$affectedRows += \$this->{$varName}->save(\$con);
+                    }
                 }
-            }
 ";
             } else {
                 $this->addRefFkScheduledForDeletion($script, $refFK);
@@ -4413,27 +4415,31 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
                 $collName = $this->getRefFKCollVarName($refFK);
                 $script .= "
                 if (\$this->$collName !== null) {
-            foreach (\$this->$collName as \$referrerFK) {
-                    if (!\$referrerFK->isDeleted() && (\$referrerFK->isNew() || \$referrerFK->isModified())) {
-                        \$affectedRows += \$referrerFK->save(\$con);
+                    foreach (\$this->$collName as \$referrerFK) {
+                        if (!\$referrerFK->isDeleted() && (\$referrerFK->isNew() || \$referrerFK->isModified())) {
+                            \$affectedRows += \$referrerFK->save(\$con);
+                        }
                     }
                 }
-            }
 ";
             } // if refFK->isLocalPrimaryKey()
         } /* foreach getReferrers() */
 
         $script .= "
-            \$this->alreadyInSave = false;
+                \$this->alreadyInSave = false;
 ";
         if ($reloadOnInsert || $reloadOnUpdate) {
             $script .= "
-            if (\$reloadObject) {
-                \$this->reload(\$con);
-            }
+                if (\$reloadObject) {
+                    \$this->reload(\$con);
+                }
 ";
         }
         $script .= "
+            } catch (\Exception \$e) {
+                \$this->alreadyInSave = false;
+                throw \$e;
+            }
         }
 
         return \$affectedRows;
@@ -4476,7 +4482,7 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
         } else {
             $script .= $this->addDoInsertBodyRaw();
         }
-            $script .= "
+        $script .= "
         \$this->setNew(false);
     }
 ";
@@ -4840,8 +4846,8 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
             $script .= "
                 }
                 \$this->postSave(\$con);";
-                $this->applyBehaviorModifier('postSave', $script, "                ");
-                $script .= "
+            $this->applyBehaviorModifier('postSave', $script, "                ");
+            $script .= "
                 ".$this->getTableMapClassName()."::addInstanceToPool(\$this);
             } else {
                 \$affectedRows = 0;
@@ -5079,9 +5085,9 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
         // Note: we're no longer resetting non-autoincrement primary keys to default values
         // due to: http://propel.phpdb.org/trac/ticket/618
         foreach ($autoIncCols as $col) {
-                $coldefval = $col->getPhpDefaultValue();
-                $coldefval = var_export($coldefval, true);
-                $script .= "
+            $coldefval = $col->getPhpDefaultValue();
+            $coldefval = var_export($coldefval, true);
+            $script .= "
             \$copyObj->set".$col->getPhpName() ."($coldefval); // this is a auto-increment column, so set to default value";
         } // foreach
         $script .= "
@@ -5263,7 +5269,7 @@ abstract class ".$this->getUnqualifiedClassName().$parentClass." implements Acti
         $this->applyBehaviorModifier('objectCall', $behaviorCallScript, "    ");
 
         $script .= $this->renderTemplate('baseObjectMethodMagicCall', array(
-                'behaviorCallScript' => $behaviorCallScript
-                ));
+            'behaviorCallScript' => $behaviorCallScript
+        ));
     }
 }
