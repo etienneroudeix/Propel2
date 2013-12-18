@@ -658,7 +658,7 @@ class ".$this->getUnqualifiedClassName()." extends TableMap
 
     public function addInstancePool()
     {
-        //No need to override instancePool if the PK is not composite
+        // No need to override instancePool if the PK is not composite
         if (!$this->getTable()->hasCompositePrimaryKey()) {
             return '';
         }
@@ -727,7 +727,8 @@ class ".$this->getUnqualifiedClassName()." extends TableMap
 
     /**
      * Checks whether any registered behavior on that table has a modifier for a hook
-     * @param  string  $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
+     * @param  string $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
+     * @param null $modifier
      * @return boolean
      */
     public function hasBehaviorModifier($hookName, $modifier = null)
@@ -739,10 +740,11 @@ class ".$this->getUnqualifiedClassName()." extends TableMap
      * Checks whether any registered behavior on that table has a modifier for a hook
      * @param string $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
      * @param string &$script  The script will be modified in this method.
+     * @param string $tab
      */
     public function applyBehaviorModifier($hookName, &$script, $tab = "        ")
     {
-        return $this->applyBehaviorModifierBase($hookName, 'TableMapBuilderModifier', $script, $tab);
+        $this->applyBehaviorModifierBase($hookName, 'TableMapBuilderModifier', $script, $tab);
     }
 
     /**

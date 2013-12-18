@@ -594,7 +594,6 @@ abstract class ".$this->getUnqualifiedClassName()." extends " . $parentClass . "
      */
     protected function addFindPkComplex(&$script)
     {
-        $table = $this->getTable();
         $class = $this->getObjectClassName();
         $this->declareClasses('\Propel\Runtime\Connection\ConnectionInterface');
         $script .= "
@@ -1005,6 +1004,7 @@ abstract class ".$this->getUnqualifiedClassName()." extends " . $parentClass . "
     /**
      * Adds the filterByFk method for this object.
      * @param string &$script The script will be modified in this method.
+     * @param $fk ForeignKey
      */
     protected function addFilterByFk(&$script, $fk)
     {
@@ -1015,7 +1015,7 @@ abstract class ".$this->getUnqualifiedClassName()." extends " . $parentClass . "
         );
         $table = $this->getTable();
         $queryClass = $this->getQueryClassName();
-        $fkTable = $this->getForeignTable($fk);
+        $fkTable = $fk->getForeignTable();
         $fkStubObjectBuilder = $this->getNewStubObjectBuilder($fkTable);
         $this->declareClassFromBuilder($fkStubObjectBuilder);
         $fkPhpName = $this->getClassNameFromBuilder($fkStubObjectBuilder, true);
@@ -1141,11 +1141,12 @@ abstract class ".$this->getUnqualifiedClassName()." extends " . $parentClass . "
     /**
      * Adds the joinFk method for this object.
      * @param string &$script The script will be modified in this method.
+     * @param $fk ForeignKey
      */
     protected function addJoinFk(&$script, $fk)
     {
         $queryClass = $this->getQueryClassName();
-        $fkTable = $this->getForeignTable($fk);
+        $fkTable = $fk->getForeignTable();
         $relationName = $this->getFKPhpNameAffix($fk);
         $joinType = $this->getJoinType($fk);
         $this->addJoinRelated($script, $fkTable, $queryClass, $relationName, $joinType);
@@ -1208,10 +1209,11 @@ abstract class ".$this->getUnqualifiedClassName()." extends " . $parentClass . "
     /**
      * Adds the useFkQuery method for this object.
      * @param string &$script The script will be modified in this method.
+     * @param $fk ForeignKey
      */
     protected function addUseFkQuery(&$script, $fk)
     {
-        $fkTable = $this->getForeignTable($fk);
+        $fkTable = $fk->getForeignTable();
         $fkQueryBuilder = $this->getNewStubQueryBuilder($fkTable);
         $queryClass = $this->getClassNameFromBuilder($fkQueryBuilder, true);
         $relationName = $this->getFKPhpNameAffix($fk);
@@ -1505,8 +1507,6 @@ abstract class ".$this->getUnqualifiedClassName()." extends " . $parentClass . "
      */
     protected function addDelete(&$script)
     {
-        $table = $this->getTable();
-        $emulateCascade = $this->isDeleteCascadeEmulationNeeded() || $this->isDeleteSetNullEmulationNeeded();
         $script .= "
     /**
      * Performs a DELETE on the database, given a ".$this->getObjectClassName()." or Criteria object OR a primary key value.

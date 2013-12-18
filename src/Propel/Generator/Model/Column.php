@@ -54,7 +54,13 @@ class Column extends MappingModel
      */
     private $phpType;
 
+    /**
+     * @var Domain
+     */
     private $domain;
+    /**
+     * @var Table
+     */
     private $parentTable;
 
     private $position;
@@ -194,7 +200,7 @@ class Column extends MappingModel
 
             $this->isNotNull = ($this->booleanValue($this->getAttribute('required'), false) || $this->isPrimaryKey); // primary keys are required
 
-            //AutoIncrement/Sequences
+            // AutoIncrement/Sequences
             $this->isAutoIncrement = $this->booleanValue($this->getAttribute('autoIncrement'));
             $this->isLazyLoad = $this->booleanValue($this->getAttribute('lazyLoad'));
 
@@ -318,6 +324,16 @@ class Column extends MappingModel
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Returns the lowercased column name.
+     *
+     * @return string
+     */
+    public function getLowercasedName()
+    {
+        return strtolower($this->name);
     }
 
     /**
